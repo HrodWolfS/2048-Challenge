@@ -1,10 +1,8 @@
-function TutorialModal({ isOpen, onClose }) {
-  if (!isOpen) return null;
-
+function TutorialModal({ closeModal }) {
   return (
     <div className="absolute top-1 right-24 h-100 w-[340px] bg-gray-700 text-orange-400 z-20 rounded-md shadow-lg">
       <button
-        onClick={onClose}
+        onClick={closeModal}
         className="absolute top-2 right-2 w-6 h-6 bg-red-600 text-white rounded-md shadow-lg"
       >
         X

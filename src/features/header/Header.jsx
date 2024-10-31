@@ -1,11 +1,7 @@
 import { useEffect, useState } from "react";
 
-export default function Header({ openModal, closeModal }) {
+export default function Header({ handleModalClick, closeModal }) {
   const [elapsedTime, setElapsedTime] = useState(0);
-  function handleModalClick(e) {
-    e.stopPropagation();
-    openModal();
-  }
 
   useEffect(() => {
     const interval = setInterval(() => {
