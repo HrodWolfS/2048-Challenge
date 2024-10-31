@@ -4,8 +4,18 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        playwrite: ['"Playwrite GB S"', "sans-serif"], // Ajoute la police Playwrite GB S
-        rubik: ['"Rubik Wet Paint"', "sans-serif"], // Ajoute la police Rubik Wet Paint
+        playwrite: ['"Playwrite GB S"', "sans-serif"],
+        rubik: ['"Rubik Wet Paint"', "sans-serif"],
+        bebas: ["'Bebas Neue'", "sans-serif"],
+      },
+      animation: {
+        "scale-pulse": "scalePulse 2s ease-in-out infinite",
+      },
+      keyframes: {
+        scalePulse: {
+          "0%, 100%": { transform: "scale(1)" },
+          "50%": { transform: "scale(1.1)" },
+        },
       },
     },
   },
