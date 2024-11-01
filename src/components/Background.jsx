@@ -1,6 +1,7 @@
+import React from "react";
 import "./Background.css";
 
-export default function Background() {
+const Background = React.memo(() => {
   const colors = {
     2: "#eee4da",
     4: "#ede0c8",
@@ -16,7 +17,7 @@ export default function Background() {
   };
 
   return (
-    <div className="absolute inset-0 z-0 pointer-events-none">
+    <div className="absolute inset-0 -z-10 bg-gray-600 pointer-events-none overflow-hidden">
       {Array.from({ length: 20 }).map((_, index) => {
         const randomX = Math.random(); // Position horizontale aléatoire
         const randomValue = Math.pow(2, Math.floor(Math.random() * 11)); // Génère des puissances de 2 (2, 4, 8, ..., 2048)
@@ -38,4 +39,8 @@ export default function Background() {
       })}
     </div>
   );
-}
+});
+
+Background.displayName = "Background";
+
+export default Background;

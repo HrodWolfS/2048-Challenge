@@ -1,6 +1,6 @@
 function TutorialModal({ closeModal }) {
   return (
-    <div className="absolute top-1 right-24 h-100 w-[340px] bg-gray-700 text-orange-400 z-20 rounded-md shadow-lg">
+    <div className="absolute top-1 sm:right-24 right-auto h-100 w-[340px] bg-gray-700 text-orange-400 z-20 rounded-md shadow-lg">
       <button
         onClick={closeModal}
         className="absolute top-2 right-2 w-6 h-6 bg-red-600 text-white rounded-md shadow-lg"
@@ -8,7 +8,7 @@ function TutorialModal({ closeModal }) {
         X
       </button>
       <div
-        className="bg-gray-700 p-8 rounded-md shadow-md text-center"
+        className="bg-gray-700 p-8 rounded-md shadow-md text-center text-sm sm:text-xl"
         onClick={(e) => e.stopPropagation()}
       >
         <h2 className="font-bold text-center">Serieux ?! 😲</h2>

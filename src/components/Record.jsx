@@ -7,10 +7,10 @@ export default function Record({ newScore }) {
   }
 
   return (
-    <div className="absolute -top-20 right-0 text-lg text-orange-400 bg-gray-700 px-8 py-1 rounded-md font-bebas">
-      <div className="flex flex-col items-center">
-        <p className="text-xl">Record : </p>
-        <p className="text-2xl">{record}</p>
+    <div className="absolute -top-16 sm:-top-20  right-0 text-lg italic text-orange-400 bg-gray-700 border border-orange-400 px-4 sm:px-8 py-1 rounded-md font-bebas">
+      <div className="flex flex-col items-center text-sm sm:text-xl">
+        <p>Record : </p>
+        <p>{record}</p>
       </div>
     </div>
   );

@@ -21,10 +21,7 @@ function App() {
     setIsModalOpen(!isModalOpen);
   };
 
-  const closeModal = () => {
-    setIsModalOpen(false);
-    console.log(isModalOpen);
-  };
+  const closeModal = () => setIsModalOpen(false);
 
   const createEmptyGrid = () => {
     return Array(4)
@@ -213,7 +210,7 @@ function App() {
   const youWin = (currentGrid) => {
     for (let row of currentGrid) {
       if (!ContinueGame) {
-        if (row.includes(8)) {
+        if (row.includes(2048)) {
           return true;
         }
       }
@@ -251,13 +248,13 @@ function App() {
 
   return (
     <>
+      <Background />
       <Header handleModalClick={handleModalClick} closeModal={closeModal} />
       <div
         onClick={closeModal}
-        className="relative flex items-center justify-center bg-gray-500 overflow-hidden"
+        className="relative flex items-center justify-center bg-transparent  z-0"
         style={{ minHeight: "calc(100vh - 4rem)" }}
       >
-        <Background />
         {/* MODAL */}
         {isModalOpen && (
           <TutorialModal closeModal={() => setIsModalOpen(false)} />
