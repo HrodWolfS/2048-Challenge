@@ -24,7 +24,7 @@ export default function Header({ handleModalClick, closeModal }) {
   return (
     <header
       onClick={closeModal}
-      className="h-16 w-30 flex items-center text-orange-400 pl-7 pb-2 font-bebas"
+      className="h-16 w-30 flex items-center text-orange-400 bg-gradient-to-b from-slate-700 to-gray-600 pl-7 pb-2 font-bebas"
     >
       <p className="position absolute">
         <span className="inline-block text-3xl -rotate-12">2048</span>
@@ -33,12 +33,12 @@ export default function Header({ handleModalClick, closeModal }) {
           Challenge
         </span>
       </p>
-      <div className="p-2 text-xl text-orange-400 border border-orange-400 bg-gray-700 rounded-md shadow mx-auto italic invisible sm:visible">
+      <div className="p-2 text-xl  rounded-md  mx-auto italic invisible sm:visible">
         <p>Temps perdu à essayer de faire 2048 👉 {formatTime(elapsedTime)}</p>
       </div>
       <button
         onClick={handleModalClick}
-        className="font-bebas text-sm sm:text-xl absolute right-10 top-auto p-2 bg-gray-700 border border-orange-400 cursor-pointer rounded-md shadow-lg hover:bg-orange-400 hover:text-gray-700 hover:border-gray-700"
+        className="font-bebas text-sm sm:text-xl absolute right-10 top-auto p-2 bg-gradient-to-t from-slate-700 to-gray-600 border-b border-orange-400 cursor-pointer rounded-md shadow-shadowBtn hover:border hover:border-orange-400 hover:shadow-sm"
       >
         Turoriel
       </button>

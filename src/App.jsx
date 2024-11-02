@@ -1,4 +1,4 @@
-import html2canvas from "html2canvas";
+//import html2canvas from "html2canvas";
 import { useEffect, useRef, useState } from "react";
 import Background from "./components/Background";
 import Record from "./components/Record";
@@ -9,6 +9,7 @@ import GameGrid from "./features/game/GameGrid";
 import GameOverModal from "./features/game/GameOverModal";
 import WinModal from "./features/game/WinModal";
 import Header from "./features/header/Header";
+import domtoimage from "dom-to-image-more";
 
 function App() {
   const [score, setScore] = useState(0);
@@ -206,7 +207,8 @@ function App() {
   const youWin = (currentGrid) => {
     for (let row of currentGrid) {
       if (!ContinueGame) {
-        if (row.includes(8)) {
+        if (row.includes(2048)) {
+          // * Pour modifier la valeur si tu veux gagner plus facilement
           return true;
         }
       }
@@ -230,14 +232,19 @@ function App() {
 
   const gridRef = useRef(null);
 
-  const handleScreenshot = async () => {
+  const handleScreenshot = () => {
     if (gridRef.current) {
-      const canvas = await html2canvas(gridRef.current);
-      const image = canvas.toDataURL("image/png");
-      const link = document.createElement("a");
-      link.href = image;
-      link.download = "grid-screenshot.png";
-      link.click();
+      domtoimage
+        .toPng(gridRef.current)
+        .then((dataUrl) => {
+          const link = document.createElement("a");
+          link.href = dataUrl;
+          link.download = "grid-screenshot.png";
+          link.click();
+        })
+        .catch((error) => {
+          console.error("Erreur lors de la capture d'écran:", error);
+        });
     }
   };
 

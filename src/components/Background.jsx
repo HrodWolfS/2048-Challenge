@@ -3,17 +3,17 @@ import "./Background.css";
 
 const Background = React.memo(() => {
   const colors = {
-    2: "#eee4da",
-    4: "#ede0c8",
-    8: "#f2b179",
-    16: "#f59563",
-    32: "#f67c5f",
-    64: "#f67c5f",
-    128: "#f9f79f",
-    256: "#f9f379",
-    512: "#f9f3b3",
-    1024: "#e3e8e3",
-    2048: "#edc22b",
+    2: "#60a5fa",
+    4: "#38bdf8",
+    8: "#22d3ee",
+    16: "#2dd4bf",
+    32: "#34d399",
+    64: "#4ade80",
+    128: "#a3e635",
+    256: "#facc15",
+    512: "#fbbf24",
+    1024: "#fb923c",
+    2048: "#f87171",
   };
 
   return (
