@@ -12,7 +12,6 @@ const GameGrid = ({ grid, gridRef }) => {
     512: "bg-red-600 text-white",
     1024: "bg-purple-500 text-white",
     2048: "bg-purple-600 text-white",
-    // On peut ajouter d'autres valeurs ici si besoin
   };
 
   const shadowClasses = {

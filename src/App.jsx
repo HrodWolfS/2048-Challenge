@@ -188,14 +188,10 @@ function App() {
   const isGameOver = () => {
     for (let i = 0; i < grid.length; i++) {
       for (let j = 0; j < grid[i].length; j++) {
-        if (grid[i][j] === 0) {
+        const cell = grid[i][j];
+        if (cell === 0) {
           return false;
         }
-      }
-    }
-    for (let i = 0; i < grid.length; i++) {
-      for (let j = 0; j < grid[i].length; j++) {
-        const cell = grid[i][j];
         if (j < grid[i].length - 1 && cell === grid[i][j + 1]) {
           return false;
         }
@@ -210,13 +206,14 @@ function App() {
   const youWin = (currentGrid) => {
     for (let row of currentGrid) {
       if (!ContinueGame) {
-        if (row.includes(2048)) {
+        if (row.includes(8)) {
           return true;
         }
       }
     }
     return false;
   };
+
   useEffect(() => {
     window.addEventListener("keydown", handleKeyPress);
 
@@ -235,10 +232,8 @@ function App() {
 
   const handleScreenshot = async () => {
     if (gridRef.current) {
-      console.log("click");
       const canvas = await html2canvas(gridRef.current);
       const image = canvas.toDataURL("image/png");
-      // Créer un lien de téléchargement
       const link = document.createElement("a");
       link.href = image;
       link.download = "grid-screenshot.png";
@@ -273,7 +268,7 @@ function App() {
           />
         )}
         {/* Contenu du jeu */}
-        <div className="relative z-10 flex flex-col items-center space-y-4">
+        <div className="relative flex flex-col items-center ">
           <Score score={score} />
           <Record newScore={score} />
           <StartAgain resetGame={resetGame} />
