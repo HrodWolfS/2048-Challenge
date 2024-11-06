@@ -24,7 +24,7 @@ export default function Header({ handleModalClick, closeModal }) {
   return (
     <header
       onClick={closeModal}
-      className="h-16 w-30 flex items-center text-orange-400 bg-gradient-to-b from-slate-700 to-gray-600 pl-7 pb-2 font-bebas"
+      className="h-16 w-full fixed top-0 flex z-150 items-center text-orange-400 bg-gradient-to-b from-slate-700 to-gray-600 pl-7 pb-2 font-bebas"
     >
       <p className="position absolute">
         <span className="inline-block text-3xl -rotate-12">2048</span>

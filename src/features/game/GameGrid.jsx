@@ -51,7 +51,7 @@ const GameGrid = ({ grid, gridRef }) => {
         row.map((cell, colIndex) => (
           <div
             key={`${rowIndex}-${colIndex}`}
-            className={`h-16 w-16 sm:h-28 sm:w-28 flex items-center justify-center rounded-lg text-xl font-bold border-t border-orange-200
+            className={`h-16 w-16 sm:h-24 sm:w-24 flex items-center justify-center rounded-lg text-xl font-bold border-t border-orange-200
               ${colorClasses[cell]}
               ${shadowClasses[cell]}
               ${translateClasses[cell]}

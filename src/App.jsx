@@ -1,4 +1,5 @@
 //import html2canvas from "html2canvas";
+import domtoimage from "dom-to-image-more";
 import { useEffect, useRef, useState } from "react";
 import Background from "./components/Background";
 import Record from "./components/Record";
@@ -9,13 +10,15 @@ import GameGrid from "./features/game/GameGrid";
 import GameOverModal from "./features/game/GameOverModal";
 import WinModal from "./features/game/WinModal";
 import Header from "./features/header/Header";
-import domtoimage from "dom-to-image-more";
 
 function App() {
   const [score, setScore] = useState(0);
   const [ModalWinOpen, setModalWinOpen] = useState(false);
   const [ContinueGame, setContinueGame] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const gridRef = useRef(null);
+  const touchStartX = useRef(0);
+  const touchStartY = useRef(0);
 
   const handleModalClick = (e) => {
     e.stopPropagation();
@@ -179,6 +182,47 @@ function App() {
     }
   };
 
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+  };
+
+  const handleTouchMove = (e) => {
+    e.preventDefault();
+  };
+
+  const handleTouchEnd = (e) => {
+    const touchEndX = e.changedTouches[0].clientX;
+    const touchEndY = e.changedTouches[0].clientY;
+    const deltaX = touchEndX - touchStartX.current;
+    const deltaY = touchEndY - touchStartY.current;
+
+    let newGrid;
+    if (Math.abs(deltaX) > Math.abs(deltaY)) {
+      if (deltaX > 0) {
+        newGrid = moveRight(grid);
+      } else {
+        newGrid = moveLeft(grid);
+      }
+    } else {
+      if (deltaY > 0) {
+        newGrid = moveDown(grid);
+      } else {
+        newGrid = moveUp(grid);
+      }
+    }
+
+    if (JSON.stringify(grid) !== JSON.stringify(newGrid)) {
+      addRandomNumber(newGrid);
+      setGrid(newGrid);
+
+      if (youWin(newGrid)) {
+        setModalWinOpen(true);
+        setContinueGame(true);
+      }
+    }
+  };
+
   const resetGame = () => {
     setScore(0);
     initializeGame();
@@ -218,9 +262,15 @@ function App() {
 
   useEffect(() => {
     window.addEventListener("keydown", handleKeyPress);
+    window.addEventListener("touchstart", handleTouchStart);
+    window.addEventListener("touchmove", handleTouchMove);
+    window.addEventListener("touchend", handleTouchEnd);
 
     return () => {
       window.removeEventListener("keydown", handleKeyPress);
+      window.removeEventListener("touchstart", handleTouchStart);
+      window.removeEventListener("touchmove", handleTouchMove);
+      window.removeEventListener("touchend", handleTouchEnd);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [grid]);
@@ -229,8 +279,6 @@ function App() {
     initializeGame();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const gridRef = useRef(null);
 
   const handleScreenshot = () => {
     if (gridRef.current) {
@@ -250,13 +298,12 @@ function App() {
 
   return (
     <>
-      <Background />
-      <Header handleModalClick={handleModalClick} closeModal={closeModal} />
       <div
         onClick={closeModal}
-        className="relative flex items-center justify-center bg-transparent  z-0"
-        style={{ minHeight: "calc(100vh - 4rem)" }}
+        className="relative flex min-h-screen items-center justify-center bg-transparent  z-0"
       >
+        <Background />
+        <Header handleModalClick={handleModalClick} closeModal={closeModal} />
         {/* MODAL */}
         {isModalOpen && (
           <TutorialModal closeModal={() => setIsModalOpen(false)} />

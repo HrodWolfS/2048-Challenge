@@ -2,6 +2,10 @@
 
 **2048 Challenge** est un projet réalisé pour relever le défi de recréer le célèbre jeu 2048. Développé avec React et stylisé avec Tailwind CSS, ce projet m’a permis de progresser dans plusieurs aspects du développement web. J'ai pu approfondir mes connaissances en matière de design, d'algorithmes et de responsive design. Ce projet constitue une étape importante dans mon apprentissage et m'a offert l'opportunité de mieux comprendre l'intégration entre esthétique et logique dans une application web.
 
+## Lien vers le site
+
+Vous pouvez jouer au jeu en ligne en suivant ce lien : [2048 Challenge](https://2048-challenge-hrodwolfs-projects.vercel.app/)
+
 ## Table des matières
 
 - [Le but du Jeu](#le-but-du-jeu)
