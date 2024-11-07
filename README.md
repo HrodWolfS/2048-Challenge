@@ -1,6 +1,6 @@
 # 2048 Challenge
 
-**2048 Challenge** est un projet réalisé pour relever le défi de recréer le célèbre jeu 2048. Développé avec React et stylisé avec Tailwind CSS, ce projet m’a permis de progresser dans plusieurs aspects du développement web. J'ai pu approfondir mes connaissances en matière de design, d'algorithmes et de responsive design. Ce projet constitue une étape importante dans mon apprentissage et m'a offert l'opportunité de mieux comprendre l'intégration entre esthétique et logique dans une application web.
+**2048 Challenge** est un projet réalisé pour relever le défi de recréer le célèbre jeu 2048. Ce challenge m'a été proposé par [Melvyn Malherbe](https://melvynx.com/) dans le cadre d'une de ces formations que j'ai suivie, [BeginJavascript](https://codeline.app/cdly/courses/beginjavascript) pour améliorer mes compétences en développement web. Développé avec React et stylisé avec Tailwind CSS, ce projet est également ma toute première application. Il m’a permis de progresser dans plusieurs domaines : design, algorithmes et responsive design. Ce projet constitue une étape importante dans mon apprentissage et m'a offert l'opportunité de mieux comprendre l'intégration entre esthétique et logique dans une application web.
 
 ## Lien vers le site
 

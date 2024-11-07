@@ -16,6 +16,7 @@ function App() {
   const [ModalWinOpen, setModalWinOpen] = useState(false);
   const [ContinueGame, setContinueGame] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [gameOverModal, setGameOverModal] = useState(false);
   const gridRef = useRef(null);
   const touchStartX = useRef(0);
   const touchStartY = useRef(0);
@@ -179,6 +180,10 @@ function App() {
         setModalWinOpen(true);
         setContinueGame(true);
       }
+
+      if (isGameOver(newGrid)) {
+        setGameOverModal(true);
+      }
     }
   };
 
@@ -220,6 +225,10 @@ function App() {
         setModalWinOpen(true);
         setContinueGame(true);
       }
+
+      if (isGameOver(newGrid)) {
+        setGameOverModal(true);
+      }
     }
   };
 
@@ -230,7 +239,7 @@ function App() {
     setModalWinOpen(false);
   };
 
-  const isGameOver = () => {
+  const isGameOver = (grid) => {
     for (let i = 0; i < grid.length; i++) {
       for (let j = 0; j < grid[i].length; j++) {
         const cell = grid[i][j];
@@ -252,7 +261,7 @@ function App() {
     for (let row of currentGrid) {
       if (!ContinueGame) {
         if (row.includes(2048)) {
-          // * Pour modifier la valeur si tu veux gagner plus facilement
+          // * Pour modifier la valeur si tu veux gagner plus vite
           return true;
         }
       }
@@ -296,11 +305,23 @@ function App() {
     }
   };
 
+  const handleCloseModals = () => {
+    if (isModalOpen) {
+      setIsModalOpen(false);
+    }
+    if (ModalWinOpen) {
+      setModalWinOpen(false);
+    }
+    if (gameOverModal) {
+      setGameOverModal(false);
+    }
+  };
+
   return (
     <>
       <div
-        onClick={closeModal}
-        className="relative flex min-h-screen items-center justify-center bg-transparent  z-0"
+        onClick={handleCloseModals}
+        className="relative flex h-screen items-center justify-center bg-transparent  z-0 overflow-hidden"
       >
         <Background />
         <Header handleModalClick={handleModalClick} closeModal={closeModal} />
@@ -308,10 +329,11 @@ function App() {
         {isModalOpen && (
           <TutorialModal closeModal={() => setIsModalOpen(false)} />
         )}
-        {isGameOver() && (
+        {gameOverModal && (
           <GameOverModal
             resetGame={resetGame}
             handleScreenshot={handleScreenshot}
+            setGameOverModal={setGameOverModal}
           />
         )}
         {ModalWinOpen && (

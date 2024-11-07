@@ -1,6 +1,6 @@
 function TutorialModal({ closeModal }) {
   return (
-    <div className="absolute top-2 sm:right-24 right-auto h-100 w-[340px] bg-gradient-to-b from-slate-700 to-gray-600 text-orange-400 z-20 border border-orange-400 rounded-md shadow-lg">
+    <div className="absolute top-20 sm:right-24 right-auto h-100 w-[340px] bg-gradient-to-b from-slate-700 to-gray-600 text-orange-400 z-20 border border-orange-400 rounded-md shadow-lg">
       <button
         onClick={closeModal}
         className="absolute top-2 right-2 w-6 h-6 bg-red-600 text-white rounded-md shadow-lg"
