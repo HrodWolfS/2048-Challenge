@@ -1,4 +1,20 @@
+import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
+
 const GameGrid = ({ grid, gridRef }) => {
+  const [cellSize, setCellSize] = useState(window.innerWidth > 640 ? 80 : 48);
+  const [gap, setGap] = useState(window.innerWidth > 640 ? 8 : 4);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setCellSize(window.innerWidth > 640 ? 80 : 48);
+      setGap(window.innerWidth > 640 ? 8 : 4);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   const colorClasses = {
     0: "bg-slate-500",
     2: "bg-blue-400 text-gray-800",
@@ -42,24 +58,53 @@ const GameGrid = ({ grid, gridRef }) => {
     2048: "translate-translte2048",
   };
 
+  const getCoord = (row, col) => {
+    return {
+      x: col * (cellSize + gap),
+      y: row * (cellSize + gap),
+    };
+  };
+
   return (
     <div
       ref={gridRef}
-      className="grid grid-cols-4 gap-2 bg-gray-700  p-2 rounded-lg shadow-lg sm:gap-4 sm:p-4"
+      className="relative"
+      style={{
+        width: `calc(4 * ${cellSize}px + 3 * ${gap}px)`,
+        height: `calc(4 * ${cellSize}px + 3 * ${gap}px)`,
+      }}
     >
       {grid.map((row, rowIndex) =>
-        row.map((cell, colIndex) => (
-          <div
-            key={`${rowIndex}-${colIndex}`}
-            className={`h-16 w-16 sm:h-24 sm:w-24 flex items-center justify-center rounded-lg text-xl font-bold border-t border-orange-200
-              ${colorClasses[cell]}
-              ${shadowClasses[cell]}
-              ${translateClasses[cell]}
-            `}
-          >
-            {cell !== 0 ? cell : ""}
-          </div>
-        ))
+        row.map((cell, colIndex) => {
+          const coord = getCoord(rowIndex, colIndex);
+
+          return (
+            <motion.div
+              key={cell.id || `${rowIndex}-${colIndex}`}
+              className={`absolute flex items-center justify-center rounded-lg text-xl font-bold 
+                ${colorClasses[cell.value]}
+                ${shadowClasses[cell.value]}
+                ${translateClasses[cell.value]}`}
+              style={{
+                width: `${cellSize}px`,
+                height: `${cellSize}px`,
+                left: `${coord.x}px`,
+                top: `${coord.y}px`,
+              }}
+              initial={cell.isNew ? { scale: 0 } : false}
+              animate={{
+                scale: cell.isMerging ? [1, 1.1, 1] : 1,
+              }}
+              transition={{
+                duration: 0.05,
+                ease: "easeOut",
+                scale: { duration: 0.05 },
+              }}
+            >
+              {cell.value !== 0 ? cell.value.toString() : ""}
+            </motion.div>
+          );
+        })
       )}
     </div>
   );

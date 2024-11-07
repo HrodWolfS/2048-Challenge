@@ -1,4 +1,3 @@
-//import html2canvas from "html2canvas";
 import domtoimage from "dom-to-image-more";
 import { useEffect, useRef, useState } from "react";
 import Background from "./components/Background";
@@ -7,7 +6,7 @@ import Score from "./components/Score";
 import StartAgain from "./components/StartAgain";
 import TutorialModal from "./components/TutorialModal";
 import GameGrid from "./features/game/GameGrid";
-import GameOverModal from "./features/game/GameOverModal";
+
 import WinModal from "./features/game/WinModal";
 import Header from "./features/header/Header";
 
@@ -16,10 +15,8 @@ function App() {
   const [ModalWinOpen, setModalWinOpen] = useState(false);
   const [ContinueGame, setContinueGame] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [gameOverModal, setGameOverModal] = useState(false);
+
   const gridRef = useRef(null);
-  const touchStartX = useRef(0);
-  const touchStartY = useRef(0);
 
   const handleModalClick = (e) => {
     e.stopPropagation();
@@ -31,7 +28,7 @@ function App() {
   const createEmptyGrid = () => {
     return Array(4)
       .fill()
-      .map(() => Array(4).fill(0));
+      .map(() => Array(4).fill({ value: 0, id: null }));
   };
 
   const [grid, setGrid] = useState(createEmptyGrid);
@@ -40,7 +37,7 @@ function App() {
     let emptyCells = [];
     newGrid.forEach((row, rowIndex) => {
       row.forEach((cell, colIndex) => {
-        if (cell === 0) {
+        if (cell.value === 0) {
           emptyCells.push({ rowIndex, colIndex });
         }
       });
@@ -49,7 +46,10 @@ function App() {
     if (emptyCells.length > 0) {
       const { rowIndex, colIndex } =
         emptyCells[Math.floor(Math.random() * emptyCells.length)];
-      newGrid[rowIndex][colIndex] = Math.random() > 0.5 ? 2 : 4;
+      newGrid[rowIndex][colIndex] = {
+        value: Math.random() > 0.5 ? 2 : 4,
+        id: Date.now() + Math.random(), // Identifiant unique
+      };
     }
   };
 
@@ -60,97 +60,8 @@ function App() {
     setGrid(newGrid);
   };
 
-  // * MOVELEFT
-  const moveLeft = (currentGrid) => {
-    const newGrid = currentGrid.map((row) => {
-      const filteredRow = row.filter((value) => value !== 0);
-      const emptyCells = Array(4 - filteredRow.length).fill(0);
-      let newRow = [...filteredRow, ...emptyCells];
-
-      for (let i = 0; i < newRow.length - 1; i++) {
-        if (newRow[i] === newRow[i + 1] && newRow[i] !== 0) {
-          const newCellValue = newRow[i] * 2;
-          newRow[i] = newCellValue;
-          newRow[i + 1] = 0;
-          setScore((prevScore) => prevScore + newCellValue);
-        }
-      }
-      newRow = newRow.filter((value) => value !== 0);
-      return [...newRow, ...Array(4 - newRow.length).fill(0)];
-    });
-    return newGrid;
-  };
-
-  // * MOVERIGHT
-  const moveRight = (currentGrid) => {
-    const newGrid = currentGrid.map((row) => {
-      const filteredRow = row.filter((value) => value !== 0);
-      const emptyCells = Array(4 - filteredRow.length).fill(0);
-      let newRow = [...emptyCells, ...filteredRow];
-
-      for (let i = newRow.length - 1; i > 0; i--) {
-        if (newRow[i] === newRow[i - 1] && newRow[i] !== 0) {
-          const newCellValue = newRow[i] * 2;
-          newRow[i] = newCellValue;
-          newRow[i - 1] = 0;
-          setScore((prevScore) => prevScore + newCellValue);
-        }
-      }
-      newRow = newRow.filter((value) => value !== 0);
-      return [...Array(4 - newRow.length).fill(0), ...newRow];
-    });
-    return newGrid;
-  };
-
   const transposeGrid = (grid) => {
     return grid[0].map((_, colIndex) => grid.map((row) => row[colIndex]));
-  };
-
-  // * MOVEUP
-  const moveUp = (currentGrid) => {
-    let newGrid = transposeGrid(currentGrid);
-    newGrid = newGrid.map((row) => {
-      const filteredRow = row.filter((value) => value !== 0);
-      const emptyCells = Array(4 - filteredRow.length).fill(0);
-      let newRow = [...filteredRow, ...emptyCells];
-
-      for (let i = 0; i < newRow.length - 1; i++) {
-        if (newRow[i] === newRow[i + 1] && newRow[i] !== 0) {
-          const newCellValue = newRow[i] * 2;
-          newRow[i] = newCellValue;
-          newRow[i + 1] = 0;
-          setScore((prevScore) => prevScore + newCellValue);
-        }
-      }
-
-      newRow = newRow.filter((value) => value !== 0);
-      return [...newRow, ...Array(4 - newRow.length).fill(0)];
-    });
-
-    return transposeGrid(newGrid);
-  };
-
-  // * MOVEDOWN
-  const moveDown = (currentGrid) => {
-    let newGrid = transposeGrid(currentGrid);
-    newGrid = newGrid.map((row) => {
-      const filteredRow = row.filter((value) => value !== 0);
-      const emptyCells = Array(4 - filteredRow.length).fill(0);
-      let newRow = [...emptyCells, ...filteredRow];
-
-      for (let i = newRow.length - 1; i > 0; i--) {
-        if (newRow[i] === newRow[i - 1] && newRow[i] !== 0) {
-          const newCellValue = newRow[i] * 2;
-          newRow[i] = newCellValue;
-          newRow[i - 1] = 0;
-          setScore((prevScore) => prevScore + newCellValue);
-        }
-      }
-      newRow = newRow.filter((value) => value !== 0);
-      return [...Array(4 - newRow.length).fill(0), ...newRow];
-    });
-
-    return transposeGrid(newGrid);
   };
 
   const handleKeyPress = (e) => {
@@ -180,55 +91,85 @@ function App() {
         setModalWinOpen(true);
         setContinueGame(true);
       }
-
-      if (isGameOver(newGrid)) {
-        setGameOverModal(true);
-      }
     }
   };
 
-  const handleTouchStart = (e) => {
-    touchStartX.current = e.touches[0].clientX;
-    touchStartY.current = e.touches[0].clientY;
+  const moveLeft = (currentGrid) => {
+    const newGrid = currentGrid.map((row) => {
+      const filteredRow = row.filter((cell) => cell.value !== 0);
+      const emptyCells = Array(4 - filteredRow.length).fill({
+        value: 0,
+        id: null,
+      });
+      let newRow = [...filteredRow, ...emptyCells];
+
+      for (let i = 0; i < newRow.length - 1; i++) {
+        if (newRow[i].value === newRow[i + 1].value && newRow[i].value !== 0) {
+          const newCellValue = newRow[i].value * 2;
+          newRow[i] = {
+            value: newCellValue,
+            id: Date.now() + Math.random(),
+            isMerging: true,
+          };
+          newRow[i + 1] = { value: 0, id: null };
+          setScore((prevScore) => prevScore + newCellValue);
+        }
+      }
+      return [...newRow];
+    });
+    return newGrid;
   };
 
-  const handleTouchMove = (e) => {
-    e.preventDefault();
+  const moveRight = (currentGrid) => {
+    const newGrid = currentGrid.map((row) => {
+      const filteredRow = row.filter((cell) => cell.value !== 0);
+      const emptyCells = Array(4 - filteredRow.length).fill({
+        value: 0,
+        id: null,
+      });
+      let newRow = [...emptyCells, ...filteredRow];
+
+      for (let i = newRow.length - 1; i > 0; i--) {
+        if (newRow[i].value === newRow[i - 1].value && newRow[i].value !== 0) {
+          const newCellValue = newRow[i].value * 2;
+          newRow[i] = {
+            value: newCellValue,
+            id: Date.now() + Math.random(),
+            isMerging: true,
+          };
+          newRow[i - 1] = { value: 0, id: null };
+          setScore((prevScore) => prevScore + newCellValue);
+        }
+      }
+      return [...newRow];
+    });
+    return newGrid;
   };
 
-  const handleTouchEnd = (e) => {
-    const touchEndX = e.changedTouches[0].clientX;
-    const touchEndY = e.changedTouches[0].clientY;
-    const deltaX = touchEndX - touchStartX.current;
-    const deltaY = touchEndY - touchStartY.current;
+  const moveUp = (currentGrid) => {
+    let newGrid = transposeGrid(currentGrid);
+    newGrid = moveLeft(newGrid);
+    return transposeGrid(newGrid);
+  };
 
-    let newGrid;
-    if (Math.abs(deltaX) > Math.abs(deltaY)) {
-      if (deltaX > 0) {
-        newGrid = moveRight(grid);
-      } else {
-        newGrid = moveLeft(grid);
-      }
-    } else {
-      if (deltaY > 0) {
-        newGrid = moveDown(grid);
-      } else {
-        newGrid = moveUp(grid);
-      }
-    }
+  const moveDown = (currentGrid) => {
+    let newGrid = transposeGrid(currentGrid);
+    newGrid = moveRight(newGrid);
+    return transposeGrid(newGrid);
+  };
 
-    if (JSON.stringify(grid) !== JSON.stringify(newGrid)) {
-      addRandomNumber(newGrid);
-      setGrid(newGrid);
-
-      if (youWin(newGrid)) {
-        setModalWinOpen(true);
-        setContinueGame(true);
-      }
-
-      if (isGameOver(newGrid)) {
-        setGameOverModal(true);
-      }
+  const moveGrid = (grid, direction) => {
+    switch (direction) {
+      case "left":
+        return moveLeft(grid);
+      case "right":
+        return moveRight(grid);
+      case "up":
+        return moveUp(grid);
+      case "down":
+        return moveDown(grid);
+      default:
+        return grid;
     }
   };
 
@@ -239,29 +180,11 @@ function App() {
     setModalWinOpen(false);
   };
 
-  const isGameOver = (grid) => {
-    for (let i = 0; i < grid.length; i++) {
-      for (let j = 0; j < grid[i].length; j++) {
-        const cell = grid[i][j];
-        if (cell === 0) {
-          return false;
-        }
-        if (j < grid[i].length - 1 && cell === grid[i][j + 1]) {
-          return false;
-        }
-        if (i < grid.length - 1 && cell === grid[i + 1][j]) {
-          return false;
-        }
-      }
-    }
-    return true;
-  };
-
   const youWin = (currentGrid) => {
     for (let row of currentGrid) {
       if (!ContinueGame) {
-        if (row.includes(2048)) {
-          // * Pour modifier la valeur si tu veux gagner plus vite
+        if (row.some((cell) => cell.value === 2048)) {
+          // * Pour modifier la valeur si tu veux gagner plus facilement
           return true;
         }
       }
@@ -271,15 +194,9 @@ function App() {
 
   useEffect(() => {
     window.addEventListener("keydown", handleKeyPress);
-    window.addEventListener("touchstart", handleTouchStart);
-    window.addEventListener("touchmove", handleTouchMove);
-    window.addEventListener("touchend", handleTouchEnd);
 
     return () => {
       window.removeEventListener("keydown", handleKeyPress);
-      window.removeEventListener("touchstart", handleTouchStart);
-      window.removeEventListener("touchmove", handleTouchMove);
-      window.removeEventListener("touchend", handleTouchEnd);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [grid]);
@@ -312,16 +229,13 @@ function App() {
     if (ModalWinOpen) {
       setModalWinOpen(false);
     }
-    if (gameOverModal) {
-      setGameOverModal(false);
-    }
   };
 
   return (
     <>
       <div
         onClick={handleCloseModals}
-        className="relative flex h-screen items-center justify-center bg-transparent  z-0 overflow-hidden"
+        className="relative flex h-screen items-center justify-center bg-transparent z-0 overflow-hidden"
       >
         <Background />
         <Header handleModalClick={handleModalClick} closeModal={closeModal} />
@@ -329,13 +243,7 @@ function App() {
         {isModalOpen && (
           <TutorialModal closeModal={() => setIsModalOpen(false)} />
         )}
-        {gameOverModal && (
-          <GameOverModal
-            resetGame={resetGame}
-            handleScreenshot={handleScreenshot}
-            setGameOverModal={setGameOverModal}
-          />
-        )}
+
         {ModalWinOpen && (
           <WinModal
             resetGame={resetGame}
@@ -344,7 +252,7 @@ function App() {
           />
         )}
         {/* Contenu du jeu */}
-        <div className="relative flex flex-col items-center ">
+        <div className="relative flex flex-col items-center">
           <Score score={score} />
           <Record newScore={score} />
           <StartAgain resetGame={resetGame} />
