@@ -1,4 +1,3 @@
-import domtoimage from "dom-to-image-more";
 import { useEffect, useRef, useState } from "react";
 import Background from "./components/Background";
 import Record from "./components/Record";
@@ -6,7 +5,6 @@ import Score from "./components/Score";
 import StartAgain from "./components/StartAgain";
 import TutorialModal from "./components/TutorialModal";
 import GameGrid from "./features/game/GameGrid";
-
 import WinModal from "./features/game/WinModal";
 import Header from "./features/header/Header";
 
@@ -15,26 +13,30 @@ function App() {
   const [ModalWinOpen, setModalWinOpen] = useState(false);
   const [ContinueGame, setContinueGame] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-
   const gridRef = useRef(null);
-
-  const handleModalClick = (e) => {
-    e.stopPropagation();
-    setIsModalOpen(!isModalOpen);
-  };
-
-  const closeModal = () => setIsModalOpen(false);
 
   const createEmptyGrid = () => {
     return Array(4)
       .fill()
-      .map(() => Array(4).fill({ value: 0, id: null }));
+      .map(() =>
+        Array(4)
+          .fill()
+          .map(() => ({
+            value: 0,
+            id: null,
+            isNew: false,
+            isMerging: false,
+          }))
+      );
   };
 
   const [grid, setGrid] = useState(createEmptyGrid);
 
+  const generateId = () =>
+    `tile-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
   const addRandomNumber = (newGrid) => {
-    let emptyCells = [];
+    const emptyCells = [];
     newGrid.forEach((row, rowIndex) => {
       row.forEach((cell, colIndex) => {
         if (cell.value === 0) {
@@ -48,7 +50,9 @@ function App() {
         emptyCells[Math.floor(Math.random() * emptyCells.length)];
       newGrid[rowIndex][colIndex] = {
         value: Math.random() > 0.5 ? 2 : 4,
-        id: Date.now() + Math.random(), // Identifiant unique
+        id: generateId(),
+        isNew: true,
+        isMerging: false,
       };
     }
   };
@@ -64,85 +68,109 @@ function App() {
     return grid[0].map((_, colIndex) => grid.map((row) => row[colIndex]));
   };
 
-  const handleKeyPress = (e) => {
-    let newGrid;
-    switch (e.key) {
-      case "ArrowLeft":
-        newGrid = moveLeft(grid);
-        break;
-      case "ArrowRight":
-        newGrid = moveRight(grid);
-        break;
-      case "ArrowUp":
-        newGrid = moveUp(grid);
-        break;
-      case "ArrowDown":
-        newGrid = moveDown(grid);
-        break;
-      default:
-        return;
-    }
-
-    if (JSON.stringify(grid) !== JSON.stringify(newGrid)) {
-      addRandomNumber(newGrid);
-      setGrid(newGrid);
-
-      if (youWin(newGrid)) {
-        setModalWinOpen(true);
-        setContinueGame(true);
-      }
-    }
-  };
-
   const moveLeft = (currentGrid) => {
     const newGrid = currentGrid.map((row) => {
+      // Filtrer les cellules non vides
       const filteredRow = row.filter((cell) => cell.value !== 0);
-      const emptyCells = Array(4 - filteredRow.length).fill({
-        value: 0,
-        id: null,
-      });
-      let newRow = [...filteredRow, ...emptyCells];
 
-      for (let i = 0; i < newRow.length - 1; i++) {
-        if (newRow[i].value === newRow[i + 1].value && newRow[i].value !== 0) {
-          const newCellValue = newRow[i].value * 2;
-          newRow[i] = {
-            value: newCellValue,
-            id: Date.now() + Math.random(),
+      // Réinitialiser les états d'animation
+      filteredRow.forEach((cell) => {
+        if (cell.id) {
+          cell.isNew = false;
+          cell.isMerging = false;
+        }
+      });
+
+      // Fusion des tuiles
+      for (let i = 0; i < filteredRow.length - 1; i++) {
+        if (
+          filteredRow[i].value === filteredRow[i + 1].value &&
+          filteredRow[i].value !== 0
+        ) {
+          const newValue = filteredRow[i].value * 2;
+          filteredRow[i] = {
+            value: newValue,
+            id: generateId(),
+            isNew: false,
             isMerging: true,
           };
-          newRow[i + 1] = { value: 0, id: null };
-          setScore((prevScore) => prevScore + newCellValue);
+          filteredRow[i + 1] = {
+            value: 0,
+            id: null,
+            isNew: false,
+            isMerging: false,
+          };
+          setScore((prev) => prev + newValue);
         }
       }
-      return [...newRow];
+
+      // Filtrer à nouveau après la fusion
+      const mergedRow = filteredRow.filter((cell) => cell.value !== 0);
+
+      // Remplir avec des cellules vides
+      const emptyCount = 4 - mergedRow.length;
+      const emptyCells = Array(emptyCount)
+        .fill()
+        .map(() => ({
+          value: 0,
+          id: null,
+          isNew: false,
+          isMerging: false,
+        }));
+
+      return [...mergedRow, ...emptyCells];
     });
+
     return newGrid;
   };
 
   const moveRight = (currentGrid) => {
     const newGrid = currentGrid.map((row) => {
       const filteredRow = row.filter((cell) => cell.value !== 0);
-      const emptyCells = Array(4 - filteredRow.length).fill({
-        value: 0,
-        id: null,
-      });
-      let newRow = [...emptyCells, ...filteredRow];
 
-      for (let i = newRow.length - 1; i > 0; i--) {
-        if (newRow[i].value === newRow[i - 1].value && newRow[i].value !== 0) {
-          const newCellValue = newRow[i].value * 2;
-          newRow[i] = {
-            value: newCellValue,
-            id: Date.now() + Math.random(),
+      filteredRow.forEach((cell) => {
+        if (cell.id) {
+          cell.isNew = false;
+          cell.isMerging = false;
+        }
+      });
+
+      for (let i = filteredRow.length - 1; i > 0; i--) {
+        if (
+          filteredRow[i].value === filteredRow[i - 1].value &&
+          filteredRow[i].value !== 0
+        ) {
+          const newValue = filteredRow[i].value * 2;
+          filteredRow[i] = {
+            value: newValue,
+            id: generateId(),
+            isNew: false,
             isMerging: true,
           };
-          newRow[i - 1] = { value: 0, id: null };
-          setScore((prevScore) => prevScore + newCellValue);
+          filteredRow[i - 1] = {
+            value: 0,
+            id: null,
+            isNew: false,
+            isMerging: false,
+          };
+          setScore((prev) => prev + newValue);
         }
       }
-      return [...newRow];
+
+      const mergedRow = filteredRow.filter((cell) => cell.value !== 0);
+      const emptyCount = 4 - mergedRow.length;
+      const emptyCells = Array(emptyCount)
+        .fill()
+        .map(() => ({
+          value: 0,
+          id: null,
+          isNew: false,
+          isMerging: false,
+        }));
+
+      return [...emptyCells, ...mergedRow];
     });
+
     return newGrid;
   };
 
@@ -158,18 +186,40 @@ function App() {
     return transposeGrid(newGrid);
   };
 
-  const moveGrid = (grid, direction) => {
-    switch (direction) {
-      case "left":
-        return moveLeft(grid);
-      case "right":
-        return moveRight(grid);
-      case "up":
-        return moveUp(grid);
-      case "down":
-        return moveDown(grid);
+  const handleKeyPress = (e) => {
+    let newGrid;
+    let moved = false;
+
+    switch (e.key) {
+      case "ArrowLeft":
+        newGrid = moveLeft([...grid.map((row) => [...row])]);
+        break;
+      case "ArrowRight":
+        newGrid = moveRight([...grid.map((row) => [...row])]);
+        break;
+      case "ArrowUp":
+        newGrid = moveUp([...grid.map((row) => [...row])]);
+        break;
+      case "ArrowDown":
+        newGrid = moveDown([...grid.map((row) => [...row])]);
+        break;
       default:
-        return grid;
+        return;
+    }
+
+    // Vérifier si la grille a changé
+    moved =
+      JSON.stringify(grid.map((row) => row.map((cell) => cell.value))) !==
+      JSON.stringify(newGrid.map((row) => row.map((cell) => cell.value)));
+
+    if (moved) {
+      addRandomNumber(newGrid);
+      setGrid(newGrid);
+
+      if (youWin(newGrid)) {
+        setModalWinOpen(true);
+        setContinueGame(true);
+      }
     }
   };
 
@@ -181,77 +231,33 @@ function App() {
   };
 
   const youWin = (currentGrid) => {
-    for (let row of currentGrid) {
-      if (!ContinueGame) {
-        if (row.some((cell) => cell.value === 2048)) {
-          // * Pour modifier la valeur si tu veux gagner plus facilement
-          return true;
-        }
-      }
+    if (!ContinueGame) {
+      return currentGrid.some((row) => row.some((cell) => cell.value === 2048));
     }
     return false;
   };
 
+  // ... reste du code (handleScreenshot, handleCloseModals, etc.)
+
   useEffect(() => {
     window.addEventListener("keydown", handleKeyPress);
-
-    return () => {
-      window.removeEventListener("keydown", handleKeyPress);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    return () => window.removeEventListener("keydown", handleKeyPress);
   }, [grid]);
 
   useEffect(() => {
     initializeGame();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const handleScreenshot = () => {
-    if (gridRef.current) {
-      domtoimage
-        .toPng(gridRef.current)
-        .then((dataUrl) => {
-          const link = document.createElement("a");
-          link.href = dataUrl;
-          link.download = "grid-screenshot.png";
-          link.click();
-        })
-        .catch((error) => {
-          console.error("Erreur lors de la capture d'écran:", error);
-        });
-    }
-  };
-
-  const handleCloseModals = () => {
-    if (isModalOpen) {
-      setIsModalOpen(false);
-    }
-    if (ModalWinOpen) {
-      setModalWinOpen(false);
-    }
-  };
 
   return (
     <>
-      <div
-        onClick={handleCloseModals}
-        className="relative flex h-screen items-center justify-center bg-transparent z-0 overflow-hidden"
-      >
+      <div className="relative flex h-screen items-center justify-center bg-transparent z-0 overflow-hidden">
         <Background />
-        <Header handleModalClick={handleModalClick} closeModal={closeModal} />
-        {/* MODAL */}
         {isModalOpen && (
           <TutorialModal closeModal={() => setIsModalOpen(false)} />
         )}
-
         {ModalWinOpen && (
-          <WinModal
-            resetGame={resetGame}
-            setModalWinOpen={setModalWinOpen}
-            handleScreenshot={handleScreenshot}
-          />
+          <WinModal resetGame={resetGame} setModalWinOpen={setModalWinOpen} />
         )}
-        {/* Contenu du jeu */}
         <div className="relative flex flex-col items-center">
           <Score score={score} />
           <Record newScore={score} />

@@ -1,22 +1,27 @@
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
 
 const GameGrid = ({ grid, gridRef }) => {
-  const [cellSize, setCellSize] = useState(window.innerWidth > 640 ? 80 : 48);
-  const [gap, setGap] = useState(window.innerWidth > 640 ? 8 : 4);
+  const [cellSize, setCellSize] = useState(window.innerWidth > 640 ? 60 : 40);
+  const [gap, setGap] = useState(window.innerWidth > 640 ? 4 : 2);
+  const [prevGrid, setPrevGrid] = useState(null);
 
   useEffect(() => {
     const handleResize = () => {
-      setCellSize(window.innerWidth > 640 ? 80 : 48);
-      setGap(window.innerWidth > 640 ? 8 : 4);
+      setCellSize(window.innerWidth > 640 ? 30 : 20);
+      setGap(window.innerWidth > 640 ? 2 : 0);
     };
 
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  useEffect(() => {
+    setPrevGrid(grid);
+  }, [grid]);
+
   const colorClasses = {
-    0: "bg-slate-500",
+    0: "bg-slate-500/30", // Fond semi-transparent pour les cellules vides
     2: "bg-blue-400 text-gray-800",
     4: "bg-sky-400 text-gray-800",
     8: "bg-cyan-400 text-white",
@@ -30,82 +35,102 @@ const GameGrid = ({ grid, gridRef }) => {
     2048: "bg-red-400 text-white",
   };
 
-  const shadowClasses = {
-    2: "shadow-shadow2",
-    4: "shadow-shadow4",
-    8: "shadow-shadow8",
-    16: "shadow-shadow16",
-    32: "shadow-shadow32",
-    64: "shadow-shadow64",
-    128: "shadow-shadow128",
-    256: "shadow-shadow256",
-    512: "shadow-shadow512",
-    1024: "shadow-shadow1024",
-    2048: "shadow-shadow2048",
-  };
+  const getCoord = (row, col) => ({
+    x: col * (cellSize + gap),
+    y: row * (cellSize + gap),
+  });
 
-  const translateClasses = {
-    2: "translate-translte2",
-    4: "translate-translte4",
-    8: "translate-translte8",
-    16: "translate-translte16",
-    32: "translate-translte32",
-    64: "translate-translte64",
-    128: "translate-translte128",
-    256: "translate-translte256",
-    512: "translate-translte512",
-    1024: "translate-translte1024",
-    2048: "translate-translte2048",
-  };
+  const findPrevPosition = (cell) => {
+    if (!prevGrid || !cell.id) return null;
 
-  const getCoord = (row, col) => {
-    return {
-      x: col * (cellSize + gap),
-      y: row * (cellSize + gap),
-    };
+    for (let row = 0; row < prevGrid.length; row++) {
+      for (let col = 0; col < prevGrid[row].length; col++) {
+        if (prevGrid[row][col].id === cell.id) {
+          return getCoord(row, col);
+        }
+      }
+    }
+    return null;
   };
 
   return (
     <div
       ref={gridRef}
-      className="relative"
+      className="relative bg-slate-700/50 rounded-lg p-2"
       style={{
-        width: `calc(4 * ${cellSize}px + 3 * ${gap}px)`,
-        height: `calc(4 * ${cellSize}px + 3 * ${gap}px)`,
+        width: `calc(4 * ${cellSize}px + 3 * ${gap}px + 16px)`, // +16px pour le padding
+        height: `calc(4 * ${cellSize}px + 3 * ${gap}px + 16px)`,
       }}
     >
-      {grid.map((row, rowIndex) =>
-        row.map((cell, colIndex) => {
-          const coord = getCoord(rowIndex, colIndex);
-
-          return (
-            <motion.div
-              key={cell.id || `${rowIndex}-${colIndex}`}
-              className={`absolute flex items-center justify-center rounded-lg text-xl font-bold 
-                ${colorClasses[cell.value]}
-                ${shadowClasses[cell.value]}
-                ${translateClasses[cell.value]}`}
+      {/* Grille de fond statique */}
+      <div className="absolute inset-2 grid grid-cols-4 gap-1">
+        {Array(16)
+          .fill(null)
+          .map((_, index) => (
+            <div
+              key={`bg-${index}`}
+              className="bg-slate-500/30 rounded-lg"
               style={{
                 width: `${cellSize}px`,
                 height: `${cellSize}px`,
-                left: `${coord.x}px`,
-                top: `${coord.y}px`,
               }}
-              initial={cell.isNew ? { scale: 0 } : false}
-              animate={{
-                scale: cell.isMerging ? [1, 1.1, 1] : 1,
-              }}
-              transition={{
-                duration: 0.05,
-                ease: "easeOut",
-                scale: { duration: 0.05 },
-              }}
-            >
-              {cell.value !== 0 ? cell.value.toString() : ""}
-            </motion.div>
-          );
-        })
-      )}
+            />
+          ))}
+      </div>
+
+      {/* Tuiles animées */}
+      <div className="relative">
+        {grid.map((row, rowIndex) =>
+          row.map((cell, colIndex) => {
+            if (cell.value === 0) return null; // Ne pas rendre les cellules vides
+
+            const coord = getCoord(rowIndex, colIndex);
+            const prevPos = findPrevPosition(cell);
+
+            return (
+              <motion.div
+                key={cell.id || `${rowIndex}-${colIndex}`}
+                className={`absolute flex items-center justify-center rounded-lg text-xl font-bold 
+                  ${colorClasses[cell.value]} shadow-lg
+                  ${cell.isMerging ? "z-20" : "z-10"}`}
+                style={{
+                  width: `${cellSize}px`,
+                  height: `${cellSize}px`,
+                }}
+                initial={
+                  cell.isNew
+                    ? {
+                        scale: 0,
+                        x: coord.x,
+                        y: coord.y,
+                      }
+                    : prevPos
+                    ? {
+                        x: prevPos.x,
+                        y: prevPos.y,
+                      }
+                    : {
+                        x: coord.x,
+                        y: coord.y,
+                      }
+                }
+                animate={{
+                  scale: cell.isMerging ? [1, 1.1, 1] : 1,
+                  x: coord.x,
+                  y: coord.y,
+                }}
+                transition={{
+                  x: { type: "spring", stiffness: 200, damping: 20 },
+                  y: { type: "spring", stiffness: 200, damping: 20 },
+                  scale: { duration: 0.15 },
+                }}
+              >
+                {cell.value}
+              </motion.div>
+            );
+          })
+        )}
+      </div>
     </div>
   );
 };
