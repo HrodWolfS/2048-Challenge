@@ -377,7 +377,7 @@ function App() {
     <>
       <div
         onClick={handleCloseModals}
-        className="relative flex h-screen items-center justify-center bg-transparent  z-0 overflow-hidden"
+        className="fixed inset-0 flex items-center justify-center bg-transparent z-0 overflow-hidden"
       >
         <Background />
         <Header handleModalClick={handleModalClick} closeModal={closeModal} />
