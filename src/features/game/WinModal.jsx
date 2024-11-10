@@ -1,5 +1,5 @@
 const WinModal = ({ resetGame, setModalWinOpen, handleScreenshot }) => (
-  <div className="absolute inset-0 z-10 flex items-center justify-center text-orange-400 bg-black bg-opacity-50 font-bebas">
+  <div className="absolute inset-0 z-30 flex items-center justify-center text-orange-400 bg-black bg-opacity-50 font-bebas">
     <div className="bg-gradient-to-b from-slate-700 to-gray-600 border border-orange-400 p-8 rounded-md shadow-lg text-center">
       <h2 className="text-lg sm:text-2xl mb-4">
         Serieux ?! je pensais pas que tu y arriverais...

@@ -1,37 +1,3 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-.translate-translte2 {
-  @apply -translate-x-[1px] -translate-y-[1px];
-}
-.translate-translte4 {
-  @apply -translate-x-[1.5px] -translate-y-[1.5px];
-}
-.translate-translte8 {
-  @apply -translate-x-[3.5px] -translate-y-[3.5px];
-}
-.translate-translte16 {
-  @apply -translate-x-[5.5px] -translate-y-[5.5px];
-}
-.translate-translte32 {
-  @apply -translate-x-[7.5px] -translate-y-[7.5px];
-}
-.translate-translte64 {
-  @apply -translate-x-[9.5px] -translate-y-[9.5px];
-}
-.translate-translte128 {
-  @apply -translate-x-[10.5px] -translate-y-[10.5px];
-}
-.translate-translte256 {
-  @apply -translate-x-[11.5px] -translate-y-[11.5px];
-}
-.translate-translte512 {
-  @apply -translate-x-[12.5px] -translate-y-[12.5px];
-}
-.translate-translte1024 {
-  @apply -translate-x-[13.5px] -translate-y-[13.5px];
-}
-.translate-translte2048 {
-  @apply -translate-x-[14.5px] -translate-y-[14.5px];
-}

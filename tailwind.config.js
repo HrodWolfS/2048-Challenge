@@ -34,14 +34,14 @@ export default {
           "rgba(0, 0, 0, 0.4) 0px 2px 4px, rgba(0, 0, 0, 0.3) 0px 7px 13px -3px, rgba(0, 0, 0, 0.2) 0px -3px 0px inset",
       },
 
-      animation: {
-        "scale-pulse": "scalePulse 2s ease-in-out infinite",
-      },
       keyframes: {
         scalePulse: {
           "0%, 100%": { transform: "scale(1)" },
           "50%": { transform: "scale(1.1)" },
         },
+      },
+      animation: {
+        "scale-pulse": "scalePulse 2s ease-in-out infinite",
       },
     },
   },

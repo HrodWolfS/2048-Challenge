@@ -1,5 +1,5 @@
 const GameOverModal = ({ resetGame, handleScreenshot }) => (
-  <div className="absolute inset-0 z-10 flex items-center justify-center text-orange-400 bg-black bg-opacity-50 font-bebas">
+  <div className="absolute inset-0 z-30 flex items-center justify-center text-orange-400 bg-black bg-opacity-50 font-bebas">
     <div className=" bg-gradient-to-b from-slate-700 to-gray-600 border border-orange-400 p-8 rounded-md shadow-lg text-center">
       <h2 className="sm:text-2xl font-rubik mb-4">Game Over</h2>
       <p className="sm:text-xl text-sm text-slate-200">

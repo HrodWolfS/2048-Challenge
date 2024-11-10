@@ -1,4 +1,3 @@
-//import html2canvas from "html2canvas";
 import domtoimage from "dom-to-image-more";
 import { useEffect, useRef, useState } from "react";
 import Background from "./components/Background";
@@ -31,16 +30,28 @@ function App() {
   const createEmptyGrid = () => {
     return Array(4)
       .fill()
-      .map(() => Array(4).fill(0));
+      .map(() =>
+        Array(4)
+          .fill()
+          .map(() => ({
+            value: 0,
+            id: null,
+            isNew: false,
+            isMerging: false,
+          }))
+      );
   };
 
   const [grid, setGrid] = useState(createEmptyGrid);
 
+  const generateId = () =>
+    `tile-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
   const addRandomNumber = (newGrid) => {
-    let emptyCells = [];
+    const emptyCells = [];
     newGrid.forEach((row, rowIndex) => {
       row.forEach((cell, colIndex) => {
-        if (cell === 0) {
+        if (cell.value === 0) {
           emptyCells.push({ rowIndex, colIndex });
         }
       });
@@ -49,7 +60,12 @@ function App() {
     if (emptyCells.length > 0) {
       const { rowIndex, colIndex } =
         emptyCells[Math.floor(Math.random() * emptyCells.length)];
-      newGrid[rowIndex][colIndex] = Math.random() > 0.5 ? 2 : 4;
+      newGrid[rowIndex][colIndex] = {
+        value: Math.random() > 0.5 ? 2 : 4,
+        id: generateId(),
+        isNew: true,
+        isMerging: false,
+      };
     }
   };
 
@@ -60,119 +76,150 @@ function App() {
     setGrid(newGrid);
   };
 
-  // * MOVELEFT
-  const moveLeft = (currentGrid) => {
-    const newGrid = currentGrid.map((row) => {
-      const filteredRow = row.filter((value) => value !== 0);
-      const emptyCells = Array(4 - filteredRow.length).fill(0);
-      let newRow = [...filteredRow, ...emptyCells];
-
-      for (let i = 0; i < newRow.length - 1; i++) {
-        if (newRow[i] === newRow[i + 1] && newRow[i] !== 0) {
-          const newCellValue = newRow[i] * 2;
-          newRow[i] = newCellValue;
-          newRow[i + 1] = 0;
-          setScore((prevScore) => prevScore + newCellValue);
-        }
-      }
-      newRow = newRow.filter((value) => value !== 0);
-      return [...newRow, ...Array(4 - newRow.length).fill(0)];
-    });
-    return newGrid;
-  };
-
-  // * MOVERIGHT
-  const moveRight = (currentGrid) => {
-    const newGrid = currentGrid.map((row) => {
-      const filteredRow = row.filter((value) => value !== 0);
-      const emptyCells = Array(4 - filteredRow.length).fill(0);
-      let newRow = [...emptyCells, ...filteredRow];
-
-      for (let i = newRow.length - 1; i > 0; i--) {
-        if (newRow[i] === newRow[i - 1] && newRow[i] !== 0) {
-          const newCellValue = newRow[i] * 2;
-          newRow[i] = newCellValue;
-          newRow[i - 1] = 0;
-          setScore((prevScore) => prevScore + newCellValue);
-        }
-      }
-      newRow = newRow.filter((value) => value !== 0);
-      return [...Array(4 - newRow.length).fill(0), ...newRow];
-    });
-    return newGrid;
-  };
-
   const transposeGrid = (grid) => {
     return grid[0].map((_, colIndex) => grid.map((row) => row[colIndex]));
   };
 
-  // * MOVEUP
-  const moveUp = (currentGrid) => {
-    let newGrid = transposeGrid(currentGrid);
-    newGrid = newGrid.map((row) => {
-      const filteredRow = row.filter((value) => value !== 0);
-      const emptyCells = Array(4 - filteredRow.length).fill(0);
-      let newRow = [...filteredRow, ...emptyCells];
+  const moveLeft = (currentGrid) => {
+    const newGrid = currentGrid.map((row) => {
+      const filteredRow = row.filter((cell) => cell.value !== 0);
 
-      for (let i = 0; i < newRow.length - 1; i++) {
-        if (newRow[i] === newRow[i + 1] && newRow[i] !== 0) {
-          const newCellValue = newRow[i] * 2;
-          newRow[i] = newCellValue;
-          newRow[i + 1] = 0;
-          setScore((prevScore) => prevScore + newCellValue);
+      filteredRow.forEach((cell) => {
+        if (cell.id) {
+          cell.isNew = false;
+          cell.isMerging = false;
+        }
+      });
+
+      // Fusion des tuiles
+      for (let i = 0; i < filteredRow.length - 1; i++) {
+        if (
+          filteredRow[i].value === filteredRow[i + 1].value &&
+          filteredRow[i].value !== 0
+        ) {
+          const newValue = filteredRow[i].value * 2;
+          filteredRow[i] = {
+            value: newValue,
+            id: generateId(),
+            isNew: false,
+            isMerging: true,
+          };
+          filteredRow[i + 1] = {
+            value: 0,
+            id: null,
+            isNew: false,
+            isMerging: false,
+          };
+          setScore((prev) => prev + newValue);
         }
       }
 
-      newRow = newRow.filter((value) => value !== 0);
-      return [...newRow, ...Array(4 - newRow.length).fill(0)];
+      const mergedRow = filteredRow.filter((cell) => cell.value !== 0);
+
+      const emptyCount = 4 - mergedRow.length;
+      const emptyCells = Array(emptyCount)
+        .fill()
+        .map(() => ({
+          value: 0,
+          id: null,
+          isNew: false,
+          isMerging: false,
+        }));
+
+      return [...mergedRow, ...emptyCells];
     });
 
+    return newGrid;
+  };
+
+  const moveRight = (currentGrid) => {
+    const newGrid = currentGrid.map((row) => {
+      const filteredRow = row.filter((cell) => cell.value !== 0);
+
+      filteredRow.forEach((cell) => {
+        if (cell.id) {
+          cell.isNew = false;
+          cell.isMerging = false;
+        }
+      });
+
+      for (let i = filteredRow.length - 1; i > 0; i--) {
+        if (
+          filteredRow[i].value === filteredRow[i - 1].value &&
+          filteredRow[i].value !== 0
+        ) {
+          const newValue = filteredRow[i].value * 2;
+          filteredRow[i] = {
+            value: newValue,
+            id: generateId(),
+            isNew: false,
+            isMerging: true,
+          };
+          filteredRow[i - 1] = {
+            value: 0,
+            id: null,
+            isNew: false,
+            isMerging: false,
+          };
+          setScore((prev) => prev + newValue);
+        }
+      }
+
+      const mergedRow = filteredRow.filter((cell) => cell.value !== 0);
+      const emptyCount = 4 - mergedRow.length;
+      const emptyCells = Array(emptyCount)
+        .fill()
+        .map(() => ({
+          value: 0,
+          id: null,
+          isNew: false,
+          isMerging: false,
+        }));
+
+      return [...emptyCells, ...mergedRow];
+    });
+
+    return newGrid;
+  };
+
+  const moveUp = (currentGrid) => {
+    let newGrid = transposeGrid(currentGrid);
+    newGrid = moveLeft(newGrid);
     return transposeGrid(newGrid);
   };
 
-  // * MOVEDOWN
   const moveDown = (currentGrid) => {
     let newGrid = transposeGrid(currentGrid);
-    newGrid = newGrid.map((row) => {
-      const filteredRow = row.filter((value) => value !== 0);
-      const emptyCells = Array(4 - filteredRow.length).fill(0);
-      let newRow = [...emptyCells, ...filteredRow];
-
-      for (let i = newRow.length - 1; i > 0; i--) {
-        if (newRow[i] === newRow[i - 1] && newRow[i] !== 0) {
-          const newCellValue = newRow[i] * 2;
-          newRow[i] = newCellValue;
-          newRow[i - 1] = 0;
-          setScore((prevScore) => prevScore + newCellValue);
-        }
-      }
-      newRow = newRow.filter((value) => value !== 0);
-      return [...Array(4 - newRow.length).fill(0), ...newRow];
-    });
-
+    newGrid = moveRight(newGrid);
     return transposeGrid(newGrid);
   };
 
   const handleKeyPress = (e) => {
     let newGrid;
+    let moved = false;
+
     switch (e.key) {
       case "ArrowLeft":
-        newGrid = moveLeft(grid);
+        newGrid = moveLeft([...grid.map((row) => [...row])]);
         break;
       case "ArrowRight":
-        newGrid = moveRight(grid);
+        newGrid = moveRight([...grid.map((row) => [...row])]);
         break;
       case "ArrowUp":
-        newGrid = moveUp(grid);
+        newGrid = moveUp([...grid.map((row) => [...row])]);
         break;
       case "ArrowDown":
-        newGrid = moveDown(grid);
+        newGrid = moveDown([...grid.map((row) => [...row])]);
         break;
       default:
         return;
     }
 
-    if (JSON.stringify(grid) !== JSON.stringify(newGrid)) {
+    moved =
+      JSON.stringify(grid.map((row) => row.map((cell) => cell.value))) !==
+      JSON.stringify(newGrid.map((row) => row.map((cell) => cell.value)));
+
+    if (moved) {
       addRandomNumber(newGrid);
       setGrid(newGrid);
 
@@ -180,7 +227,6 @@ function App() {
         setModalWinOpen(true);
         setContinueGame(true);
       }
-
       if (isGameOver(newGrid)) {
         setGameOverModal(true);
       }
@@ -242,25 +288,35 @@ function App() {
   const isGameOver = (grid) => {
     for (let i = 0; i < grid.length; i++) {
       for (let j = 0; j < grid[i].length; j++) {
-        const cell = grid[i][j];
-        if (cell === 0) {
-          return false;
-        }
-        if (j < grid[i].length - 1 && cell === grid[i][j + 1]) {
-          return false;
-        }
-        if (i < grid.length - 1 && cell === grid[i + 1][j]) {
+        if (grid[i][j].value === 0) {
           return false;
         }
       }
     }
+
+    for (let i = 0; i < grid.length; i++) {
+      for (let j = 0; j < grid[i].length - 1; j++) {
+        if (grid[i][j].value === grid[i][j + 1].value) {
+          return false;
+        }
+      }
+    }
+
+    for (let i = 0; i < grid.length - 1; i++) {
+      for (let j = 0; j < grid[i].length; j++) {
+        if (grid[i][j].value === grid[i + 1][j].value) {
+          return false;
+        }
+      }
+    }
+
     return true;
   };
 
   const youWin = (currentGrid) => {
     for (let row of currentGrid) {
       if (!ContinueGame) {
-        if (row.includes(2048)) {
+        if (row.some((cell) => cell.value === 2048)) {
           // * Pour modifier la valeur si tu veux gagner plus vite
           return true;
         }
