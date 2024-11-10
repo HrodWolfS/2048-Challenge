@@ -400,7 +400,7 @@ function App() {
           />
         )}
         {/* Contenu du jeu */}
-        <div className="relative flex flex-col items-center overflow-hidden ">
+        <div className="relative flex flex-col items-center">
           <Score score={score} />
           <Record newScore={score} />
           <StartAgain resetGame={resetGame} />
